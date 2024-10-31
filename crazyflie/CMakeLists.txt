@@ -15,6 +15,7 @@ find_package(std_srvs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(crazyflie_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(motion_capture_tracking_interfaces REQUIRED)
 find_package(Eigen3 REQUIRED)
 
@@ -40,6 +41,7 @@ ament_target_dependencies(teleop
   std_srvs
   crazyflie_interfaces
   geometry_msgs
+  nav_msgs
 )
 
 add_executable(crazyflie_server 
@@ -112,6 +114,8 @@ install(PROGRAMS
   scripts/aideck_streamer.py
   scripts/gui.py
   scripts/flash.py
+  scripts/multiranger.py
+  scripts/follower_drone.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -28,29 +28,22 @@ def generate_launch_description():
         robot_desc = f.read()
     server_params['robot_description'] = robot_desc
 
-    crazyflie_name = '/cf1'
+    crazyflie_name = '/cf5'
 
     return LaunchDescription([
-        Node(
-            package='crazyflie',
-            executable='crazyflie_server.py',
-            name='crazyflie_server',
-            output='screen',
-            parameters=[server_params]
-        ),
         Node(
             package='crazyflie',
             executable='vel_mux.py',
             name='vel_mux',
             output='screen',
             parameters=[{'hover_height': 0.3},
-                        {'incoming_twist_topic': '/cmd_vel'},
+                        {'incoming_twist_topic': '/cmd_vel_follower'},
                         {'robot_prefix': crazyflie_name}]
         ),
         Node(
             package='crazyflie',
-            executable='multiranger.py',
-            name='multiranger',
+            executable='follower_drone.py',
+            name='follower_drone',
             output='screen',
             parameters=[
                 {'robot_prefix': crazyflie_name}]

@@ -15,7 +15,7 @@ from collections import defaultdict
 
 
 from crazyflie_interfaces.msg import FullState, Position, Status, TrajectoryPolynomialPiece
-from crazyflie_interfaces.srv import Arm, GoTo, Land, \
+from crazyflie_interfaces.srv import Arm, GoTo, Land,\
     NotifySetpointsStop, StartTrajectory, Takeoff, UploadTrajectory
 from geometry_msgs.msg import Point
 import numpy as np
@@ -144,12 +144,11 @@ class Crazyflie:
         self.status = {}
 
         # Query some settings
-        self.getParamsService = node.create_client(
-            GetParameters, '/crazyflie_server/get_parameters')
-        self.getParamsService.wait_for_service()
+        getParamsService = node.create_client(GetParameters, '/crazyflie_server/get_parameters')
+        getParamsService.wait_for_service()
         req = GetParameters.Request()
         req.names = ['robots.{}.initial_position'.format(cfname), 'robots.{}.uri'.format(cfname)]
-        future = self.getParamsService.call_async(req)
+        future = getParamsService.call_async(req)
         while rclpy.ok():
             rclpy.spin_once(node)
             if future.done():
@@ -160,7 +159,7 @@ class Crazyflie:
                 elif response.values[0].type == ParameterType.PARAMETER_DOUBLE_ARRAY:
                     self.initialPosition = np.array(response.values[0].double_array_value)
                 else:
-                    assert False
+                    assert(False)
 
                 # extract uri
                 self.uri = response.values[1].string_value
@@ -223,44 +222,44 @@ class Crazyflie:
         except KeyError:
             self.node.get_logger().error('setGroupMask: Your firmware is too old - Please update.')
 
-    # def enableCollisionAvoidance(self, others, ellipsoidRadii):
-    #     """Enables onboard collision avoidance.
+    def enableCollisionAvoidance(self, others, ellipsoidRadii):
+        """Enables onboard collision avoidance.
 
-    #     When enabled, avoids colliding with other Crazyflies by using the
-    #     Buffered Voronoi Cells method [1]. Computation is performed onboard.
+        When enabled, avoids colliding with other Crazyflies by using the
+        Buffered Voronoi Cells method [1]. Computation is performed onboard.
 
-    #     Args:
-    #         others (List[Crazyflie]): List of other :obj:`Crazyflie` objects.
-    #             In simulation, collision avoidance is checked only with members
-    #             of this list.  With real hardware, this list is **ignored**, and
-    #             collision avoidance is checked with all other Crazyflies on the
-    #             same radio channel.
-    #         ellipsoidRadii (array-like of float[3]): Radii of collision volume
-    #             ellipsoid in meters.
-    #             The Crazyflie's boundary for collision checking is a tall
-    #             ellipsoid. This accounts for the downwash effect: Due to the
-    #             fast-moving stream of air produced by the rotors, the safe
-    #             distance to pass underneath another rotorcraft is much further
-    #             than the safe distance to pass to the side.
+        Args:
+            others (List[Crazyflie]): List of other :obj:`Crazyflie` objects.
+                In simulation, collision avoidance is checked only with members
+                of this list.  With real hardware, this list is **ignored**, and
+                collision avoidance is checked with all other Crazyflies on the
+                same radio channel.
+            ellipsoidRadii (array-like of float[3]): Radii of collision volume
+                ellipsoid in meters.
+                The Crazyflie's boundary for collision checking is a tall
+                ellipsoid. This accounts for the downwash effect: Due to the
+                fast-moving stream of air produced by the rotors, the safe
+                distance to pass underneath another rotorcraft is much further
+                than the safe distance to pass to the side.
 
-    #     [1] D. Zhou, Wang, Z., Bandyopadhyay, S., and Schwager, M.
-    #         Fast, On-line Collision Avoidance for Dynamic Vehicles using
-    #         Buffered Voronoi Cells.  IEEE Robotics and Automation Letters
-    #         (RA-L), vol. 2, no. 2, pp. 1047 - 1054, 2017.
-    #         https://msl.stanford.edu/fast-line-collision-avoidance-dynamic-vehicles-using-buffered-voronoi-cells
-    #     """
-    #     # Set radii before enabling to ensure collision avoidance never
-    #     # observes a wrong radius value.
-    #     self.setParams({
-    #         'colAv/ellipsoidX': float(ellipsoidRadii[0]),
-    #         'colAv/ellipsoidY': float(ellipsoidRadii[1]),
-    #         'colAv/ellipsoidZ': float(ellipsoidRadii[2]),
-    #     })
-    #     self.setParam('colAv/enable', 1)
+        [1] D. Zhou, Wang, Z., Bandyopadhyay, S., and Schwager, M.
+            Fast, On-line Collision Avoidance for Dynamic Vehicles using
+            Buffered Voronoi Cells.  IEEE Robotics and Automation Letters
+            (RA-L), vol. 2, no. 2, pp. 1047 - 1054, 2017.
+            https://msl.stanford.edu/fast-line-collision-avoidance-dynamic-vehicles-using-buffered-voronoi-cells
+        """
+        # Set radii before enabling to ensure collision avoidance never
+        # observes a wrong radius value.
+        self.setParams({
+            'colAv/ellipsoidX': float(ellipsoidRadii[0]),
+            'colAv/ellipsoidY': float(ellipsoidRadii[1]),
+            'colAv/ellipsoidZ': float(ellipsoidRadii[2]),
+        })
+        self.setParam('colAv/enable', 1)
 
-    # def disableCollisionAvoidance(self):
-    #     """Disables onboard collision avoidance."""
-    #     self.setParam('colAv/enable', 0)
+    def disableCollisionAvoidance(self):
+        """Disables onboard collision avoidance."""
+        self.setParam('colAv/enable', 0)
 
     def emergency(self):
         """
@@ -503,44 +502,26 @@ class Crazyflie:
     #       '/world', '/cf' + str(self.id), rospy.Time(0))
     #     return np.array(position)
 
-    def getParam(self, name):
-        """
-        Get the current value of the onboard named parameter.
+    # def getParam(self, name):
+    #     """Returns the current value of the onboard named parameter.
 
-        Parameters are named values of various primitive C types that control
-        the firmware's behavior. For more information, see
-        https://www.bitcraze.io/documentation/repository/crazyflie-firmware/master/userguides/logparam/.
+    #     Parameters are named values of various primitive C types that control
+    #     the firmware's behavior. For more information, see
+    #     https://www.bitcraze.io/documentation/repository/crazyflie-firmware/master/userguides/logparam/.
 
-        Parameters are read at system startup over the radio and cached.
-        The ROS launch file can also be used to set parameter values at startup.
-        Subsequent calls to :meth:`setParam()` will update the cached value.
-        However, if the parameter changes for any other reason, the cached value
-        might become stale. This situation is not common.
+    #     Parameters are read at system startup over the radio and cached.
+    #     The ROS launch file can also be used to set parameter values at startup.
+    #     Subsequent calls to :meth:`setParam()` will update the cached value.
+    #     However, if the parameter changes for any other reason, the cached value
+    #     might become stale. This situation is not common.
 
-        Args:
-            name (str): The parameter's name.
+    #     Args:
+    #         name (str): The parameter's name.
 
-        Returns:
-            value (Any): The parameter's value.
-
-        """
-        param_name = self.prefix[1:] + '.params.' + name
-        req = GetParameters.Request()
-        req.names = [param_name]
-        future = self.getParamsService.call_async(req)
-        rclpy.spin_until_future_complete(self.node, future)
-        param_type = self.paramTypeDict[name]
-        try:
-            if param_type == ParameterType.PARAMETER_INTEGER:
-                param_value = future.result().values[0].integer_value
-            elif param_type == ParameterType.PARAMETER_DOUBLE:
-                param_value = future.result().values[0].double_value
-        except KeyError as e:
-            self.get_logger().warn(f'(crazyflie.py)getParam : keyError raised {e}')
-        except Exception as e:
-            self.get_logger().warn(f'(crazyflie.py)getParam : exception raised {e}')
-
-        return param_value
+    #     Returns:
+    #         value (Any): The parameter's value.
+    #     """
+    #     return rospy.get_param(self.prefix + '/' + name)
 
     def setParam(self, name, value):
         """
@@ -716,28 +697,28 @@ class Crazyflie:
         self.cmdPositionMsg.yaw = yaw
         self.cmdPositionPublisher.publish(self.cmdPositionMsg)
 
-    # def setLEDColor(self, r, g, b):
-    #     """Sets the color of the LED ring deck.
+    def setLEDColor(self, r, g, b):
+        """Sets the color of the LED ring deck.
 
-    #     While most params (such as PID gains) only need to be set once, it is
-    #     common to change the LED ring color many times during a flight, e.g.
-    #     as some kind of status indicator. This method makes it convenient.
+        While most params (such as PID gains) only need to be set once, it is
+        common to change the LED ring color many times during a flight, e.g.
+        as some kind of status indicator. This method makes it convenient.
 
-    #     PRECONDITION: The param 'ring/effect' must be set to 7 (solid color)
-    #     for this command to have any effect. The default mode uses the ring
-    #     color to indicate radio connection quality.
+        PRECONDITION: The param 'ring/effect' must be set to 7 (solid color)
+        for this command to have any effect. The default mode uses the ring
+        color to indicate radio connection quality.
 
-    #     This is a blocking command, so it may cause stability problems for
-    #     large swarms and/or high-frequency changes.
+        This is a blocking command, so it may cause stability problems for
+        large swarms and/or high-frequency changes.
 
-    #     Args:
-    #         r (float): Red component of color, in range [0, 1].
-    #         g (float): Green component of color, in range [0, 1].
-    #         b (float): Blue component of color, in range [0, 1].
-    #     """
-    #     self.setParam('ring/solidRed', int(r * 255))
-    #     self.setParam('ring/solidGreen', int(g * 255))
-    #     self.setParam('ring/solidBlue', int(b * 255))
+        Args:
+            r (float): Red component of color, in range [0, 1].
+            g (float): Green component of color, in range [0, 1].
+            b (float): Blue component of color, in range [0, 1].
+        """
+        self.setParam('ring/solidRed', int(r * 255))
+        self.setParam('ring/solidGreen', int(g * 255))
+        self.setParam('ring/solidBlue', int(b * 255))
 
     def status_topic_callback(self, msg):
         """
