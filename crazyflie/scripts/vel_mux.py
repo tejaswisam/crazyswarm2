@@ -29,7 +29,7 @@ class VelMux(Node):
         
         self.subscription = self.create_subscription(
             Twist,
-            incoming_twist_topic,
+            "/cmd_vel",
             self.cmd_vel_callback,
             10)
         self.msg_cmd_vel = Twist()

@@ -31,7 +31,7 @@ MAP_RES = 0.1
 class SimpleMapperMultiranger(Node):
     def __init__(self):
         super().__init__('simple_mapper_multiranger')
-        self.declare_parameter('robot_prefix', '/cf231')
+        self.declare_parameter('robot_prefix', '/cf1')
         robot_prefix = self.get_parameter('robot_prefix').value
 
         self.odom_subscriber = self.create_subscription(

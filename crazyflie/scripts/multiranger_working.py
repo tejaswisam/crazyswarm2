@@ -5,15 +5,11 @@ from rclpy.node import Node
 import math
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
-from geometry_msgs.msg import Twist, Pose, PoseArray
-import time
+from geometry_msgs.msg import Twist
 
 class MazeSolver(Node):
     def __init__(self):
-        super().__init__('mapper_drone')
-        self.trajectory = []  # To store mapper drone's trajectory
-        # Timer for publishing trajectory points
-        self.create_timer(0.1, self.publish_trajectory)
+        super().__init__('maze_solver')
 
         # Parameters for the goal
         self.declare_parameter('robot_prefix', '/cf1')
@@ -30,15 +26,6 @@ class MazeSolver(Node):
         self.lidar_subscriber = self.create_subscription(
             LaserScan, robot_prefix + '/scan', self.scan_callback, 10)
 
-        # Publisher for velocity commands
-        self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
-
-        # Publisher for trajectory points
-        self.trajectory_pub = self.create_publisher(PoseArray, '/trajectory', 10)
-
-        self.trajectory = PoseArray()
-        self.start_time = None
-
         # Lidar ranges: [back, right, front, left]
         self.lidar_ranges = [3.5] * 4
         self.obstacle_distance_threshold = 0.3  # meters
@@ -52,30 +39,16 @@ class MazeSolver(Node):
         self.state = 'move_to_goal'
         self.goal_reached = False  # Initialize goal_reached flag
 
-        # Timer for regular position, goal checking, and trajectory publishing
+        # Publisher for velocity commands
+        self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+
+        # Timer for regular position and goal checking
         self.create_timer(0.1, self.check_goal)  # 10 Hz
 
     def odom_callback(self, msg):
-        if self.start_time is None:
-            self.start_time = time.time()  # Record the start time
-
-        current_time = time.time() - self.start_time  # Calculate elapsed time
         # Update the drone's current position
         self.position[0] = msg.pose.pose.position.x
         self.position[1] = msg.pose.pose.position.y
-
-        # Create a Pose and set position and time
-        pose = Pose()
-        pose.position.x = msg.pose.pose.position.x
-        pose.position.y = msg.pose.pose.position.y
-
-        # Append timestamp to the pose
-        self.trajectory.poses.append(pose)
-        self.trajectory.header.stamp.sec = int(current_time)
-        self.trajectory.header.stamp.nanosec = int((current_time - int(current_time)) * 1e9)
-
-        # Publish the current position as part of the trajectory
-        self.publish_trajectory()
 
     def scan_callback(self, msg):
         # Update Lidar readings: [back, right, front, left]
@@ -142,13 +115,6 @@ class MazeSolver(Node):
             else:
                 # Obstacles in front, right, and left, move back
                 self.move_in_direction(0)
-
-    def publish_trajectory(self):
-        if self.trajectory.poses:
-            self.trajectory.header.stamp = self.get_clock().now().to_msg()  # Update header timestamp
-            self.trajectory_pub.publish(self.trajectory)
-            self.get_logger().info(f'Published trajectory with {len(self.trajectory.poses)} points.')
-
 
 def main(args=None):
     rclpy.init(args=args)

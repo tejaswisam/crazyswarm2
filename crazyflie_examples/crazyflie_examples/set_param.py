@@ -10,15 +10,16 @@ def main():
 
     # disable LED (one by one)
     for cf in allcfs.crazyflies:
-        cf.setParam('led.bitmask', 128)
+        cf.setParam('ring.solidRed', int(0.7 * 255))
+        cf.setParam('ring.solidGreen', int(0.0 * 255))
+        cf.setParam('ring.solidBlue', int(0.0 * 255))
         timeHelper.sleep(1.0)
-        if cf.getParam('led.bitmask') != 128:
-            print('LED of cf', cf.id, 'is not disabled!')
 
     timeHelper.sleep(2.0)
 
     # enable LED (broadcast)
-    allcfs.setParam('led.bitmask', 0)
+    allcfs.setParam('ring.solidRed', int(0.0 * 255))
+    allcfs.setParam('ring.solidBlue', int(0.9 * 255))
     timeHelper.sleep(5.0)
 
 
