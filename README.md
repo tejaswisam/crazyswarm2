@@ -1,4 +1,20 @@
 # Crazyswarm2 with Multi-Ranger Deck Control
+This project is part of Reserach Demo
+
+**Mini Mapper: Cost-Effective Indoor Mapping and Navigation using Nano Drone** (Published)
+<br>
+*Tejaswi Samavedula, Satyajit Mohapatra and Sanjeet Kumar Nayak*
+<br>
+*International Conference on COMmunication Systems & NETworkS (COMSNETS), 2025*
+<br>
+
+This research explores cost-effective and efficient solution for indoor mapping using nano drones equipped with quad-ToF sensor. This work is based on mapper-follower architecture focusing on computational efficiency and autonomy for nano drones. This research is accepted in 17th International Conference on COMmunication Systems & NETworkS.
+
+[Proceedings in IEEE Xplore](https://ieeexplore.ieee.org/document/10885580)
+<br>
+[Demo Video](https://www.youtube.com/watch?v=BqCE9QlfSPI)
+<br>
+[COMSNETS Demos and Exhibits](https://www.comsnets.org/archive/2025/demos_exhibits.html)
 
 This repository is a modified version of the [Crazyswarm2](https://github.com/IMRCLab/crazyswarm2) package, with added support for the Crazyflie Multi-Ranger deck. This enhancement enables control and sensor data integration from the Multi-Ranger deck, making it ideal for autonomous navigation and obstacle avoidance tasks in 3D space.
 
